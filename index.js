@@ -42,6 +42,23 @@ async function run() {
             const result = await purchaseCollection.insertOne(purchase);
             res.send({ success: true, result });
         })
+
+        // update quantity
+        app.put('/tools/:id', async (req, res) => {
+            const purchaseProduct = req.body;
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+
+            const updateDoc = {
+                $set: {
+                    quantity: purchaseProduct.quantity
+                }
+            };
+            const result = await toolsCollection.updateOne(filter, updateDoc, options);
+            res.send({ success: true, result });
+        })
+
     } finally {
 
     }
