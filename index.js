@@ -18,7 +18,7 @@ async function run() {
     try {
         await client.connect();
         const toolsCollection = client.db("manufacture").collection("products");
-        const purchaseCollection = client.db("manufacture").collection("purchase");
+        const orderCollection = client.db("manufacture").collection("orders");
 
         // get all tools
         app.get('/tools', async (req, res) => {
@@ -36,11 +36,19 @@ async function run() {
             res.send(tools);
         })
 
-        // post purchase item
-        app.post('/purchase', async (req, res) => {
+        // post order item
+        app.post('/order', async (req, res) => {
             const purchase = req.body;
-            const result = await purchaseCollection.insertOne(purchase);
+            const result = await orderCollection.insertOne(purchase);
             res.send({ success: true, result });
+        })
+
+        // get my orders
+        app.get('/orders', async (req, res) => {
+            const buyer = req.query.buyer;
+            const query = { buyer: buyer };
+            const orders = await orderCollection.find(query).toArray();
+            return res.send(orders);
         })
 
         // update quantity
