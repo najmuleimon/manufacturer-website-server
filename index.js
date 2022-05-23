@@ -14,6 +14,21 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@clu
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send({ message: 'UnAuthorized Access!' });
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: 'Forbidden Access!' })
+        }
+        req.decoded = decoded;
+        next();
+    });
+}
+
 async function run() {
 
     try {
@@ -22,7 +37,7 @@ async function run() {
         const orderCollection = client.db("manufacture").collection("orders");
         const userCollection = client.db("manufacture").collection("users");
 
-        // get all tools
+        // get all tools from tools collection
         app.get('/tools', async (req, res) => {
             const query = {};
             const cursor = toolsCollection.find(query);
@@ -30,7 +45,7 @@ async function run() {
             res.send(tools);
         })
 
-        // get a single tool
+        // get a single tool from tools collection
         app.get('/tools/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -38,22 +53,28 @@ async function run() {
             res.send(tools);
         })
 
-        // post order item
+        // post order item in order collection
         app.post('/order', async (req, res) => {
             const purchase = req.body;
             const result = await orderCollection.insertOne(purchase);
             res.send({ success: true, result });
         })
 
-        // get my orders
-        app.get('/orders', async (req, res) => {
+        // get my orders from order collection
+        app.get('/orders', verifyJWT, async (req, res) => {
             const buyer = req.query.buyer;
-            const query = { buyer: buyer };
-            const orders = await orderCollection.find(query).toArray();
-            return res.send(orders);
+            const decodedEmail = req.decoded.email;
+            if (buyer === decodedEmail) {
+                const query = { buyer: buyer };
+                const orders = await orderCollection.find(query).toArray();
+                return res.send(orders);
+            }
+            else {
+                return res.status(403).send({ message: 'forbidden Access!' });
+            }
         })
 
-        // update quantity
+        // update quantity in tools collection
         app.put('/tools/:id', async (req, res) => {
             const purchaseProduct = req.body;
             const id = req.params.id;
@@ -69,7 +90,7 @@ async function run() {
             res.send({ success: true, result });
         })
 
-        // put users
+        // put users to user collection
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
             const user = req.body;
@@ -82,6 +103,13 @@ async function run() {
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
             res.send({ result, token });
         })
+
+        // get all users from user collection
+        app.get('/users', async (req, res) => {
+            const cursor = userCollection.find({});
+            const users = await cursor.toArray();
+            res.send(users);
+        });
 
     } finally {
 
