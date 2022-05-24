@@ -38,6 +38,7 @@ async function run() {
         const orderCollection = client.db("manufacture").collection("orders");
         const userCollection = client.db("manufacture").collection("users");
         const paymentCollection = client.db("manufacture").collection("payments");
+        const reviewCollection = client.db("manufacture").collection("reviews");
 
         // admin verification check
         const verifyAdmin = async (req, res, next) => {
@@ -183,13 +184,26 @@ async function run() {
         })
 
         // delete order
-        app.delete('/order/:id', async (req, res) => {
+        app.delete('/order/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await orderCollection.deleteOne(query);
             res.send(result);
-
         })
+
+        // post review in review collection
+        app.post('/review', verifyJWT, async (req, res) => {
+            const review = req.body;
+            const result = await reviewCollection.insertOne(review);
+            res.send({ success: true, result });
+        })
+
+        // get all reviews from review collection
+        app.get('/reviews', async (req, res) => {
+            const cursor = reviewCollection.find({});
+            const reviews = await cursor.toArray();
+            res.send(reviews);
+        });
 
     } finally {
 
