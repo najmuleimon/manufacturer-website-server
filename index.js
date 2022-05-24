@@ -152,7 +152,7 @@ async function run() {
                 $set: user,
             };
             const result = await userCollection.updateOne(filter, updateDoc, options);
-            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' });
             res.send({ result, token });
         })
 
@@ -179,6 +179,14 @@ async function run() {
                 $set: { role: 'admin' },
             };
             const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        })
+
+        // delete order
+        app.delete('/order/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await orderCollection.deleteOne(query);
             res.send(result);
 
         })
