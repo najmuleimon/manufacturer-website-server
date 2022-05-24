@@ -37,6 +37,7 @@ async function run() {
         const toolsCollection = client.db("manufacture").collection("products");
         const orderCollection = client.db("manufacture").collection("orders");
         const userCollection = client.db("manufacture").collection("users");
+        const paymentCollection = client.db("manufacture").collection("payments");
 
         // admin verification check
         const verifyAdmin = async (req, res, next) => {
@@ -84,6 +85,23 @@ async function run() {
             const purchase = req.body;
             const result = await orderCollection.insertOne(purchase);
             res.send({ success: true, result });
+        })
+
+        // update order paid status
+        app.patch('/order/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
+            }
+
+            const result = await paymentCollection.insertOne(payment);
+            const updatedBooking = await orderCollection.updateOne(filter, updatedDoc);
+            res.send(updatedBooking);
         })
 
         // get my orders from order collection
