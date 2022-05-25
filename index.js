@@ -72,6 +72,13 @@ async function run() {
             const tools = await cursor.toArray();
             res.send(tools);
         })
+        // get all orders from order collection
+        app.get('/orders', async (req, res) => {
+            const query = {};
+            const cursor = orderCollection.find(query);
+            const orders = await cursor.toArray();
+            res.send(orders);
+        })
 
         // post tools in tools collection
         app.post('/tools', verifyJWT, verifyAdmin, async (req, res) => {
@@ -108,8 +115,21 @@ async function run() {
             }
 
             const result = await paymentCollection.insertOne(payment);
-            const updatedBooking = await orderCollection.updateOne(filter, updatedDoc);
-            res.send(updatedBooking);
+            const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
+            res.send(updatedOrder);
+        })
+        // update order shipped status
+        app.patch('/order/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    status: 'approved'
+                }
+            }
+
+            const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
+            res.send(updatedOrder);
         })
 
         // get my orders from order collection
