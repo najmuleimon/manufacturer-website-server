@@ -195,6 +195,25 @@ async function run() {
             const result = await userCollection.updateOne(filter, updateDoc);
             res.send(result);
         })
+        // put user information to update user info in user collection
+        app.put('/user/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            console.log(user);
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    location: user.location,
+                    image: user.image,
+                    phone: user.phone,
+                    education: user.education,
+                    link: user.profile
+                },
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
+        })
 
         // delete order
         app.delete('/order/:id', verifyJWT, async (req, res) => {
