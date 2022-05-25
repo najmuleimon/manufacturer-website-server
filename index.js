@@ -170,6 +170,12 @@ async function run() {
             const users = await cursor.toArray();
             res.send(users);
         });
+        // get single user from user collection
+        app.get('/user/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const user = await userCollection.findOne({ email: email });
+            res.send(user);
+        });
 
         // find admin from user collection
         app.get('/admin/:email', async (req, res) => {
