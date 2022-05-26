@@ -1,6 +1,6 @@
 # Jontro Electronics Manufacturer Website
 
-Live Preview link: 
+Live Preview link: https://manufacturer-ceec3.web.app
 
 ## Features and Functionality of this Project
  - This website is about electronics manufacturing.
