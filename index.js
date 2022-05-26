@@ -87,6 +87,15 @@ async function run() {
             res.send(result);
         });
 
+        // delete products from tools collection
+        app.delete('/tool/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await toolsCollection.deleteOne(query);
+            res.send(result);
+        })
+
+
         // get a single tool from tools collection
         app.get('/tools/:id', async (req, res) => {
             const id = req.params.id;
@@ -118,8 +127,9 @@ async function run() {
             const updatedOrder = await orderCollection.updateOne(filter, updatedDoc);
             res.send(updatedOrder);
         })
+
         // update order shipped status
-        app.patch('/order/:id', verifyJWT, async (req, res) => {
+        app.patch('/shipped/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const updatedDoc = {
@@ -133,7 +143,7 @@ async function run() {
         })
 
         // get my orders from order collection
-        app.get('/orders', verifyJWT, async (req, res) => {
+        app.get('/my-orders', verifyJWT, async (req, res) => {
             const buyer = req.query.buyer;
             const decodedEmail = req.decoded.email;
             if (buyer === decodedEmail) {
