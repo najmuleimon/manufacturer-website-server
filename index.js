@@ -40,6 +40,7 @@ async function run() {
         const paymentCollection = client.db("manufacture").collection("payments");
         const reviewCollection = client.db("manufacture").collection("reviews");
 
+        // live server = https://warm-badlands-89988.herokuapp.com/
         // admin verification check
         const verifyAdmin = async (req, res, next) => {
             const initiator = req.decoded.email;
